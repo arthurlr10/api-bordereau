@@ -3,7 +3,7 @@ import multer from 'multer';
 import processRouter from './routes/process.js';
 import mergeRouter from './routes/merge.js';
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3001;
 const app = express();
 
 app.use(express.json({ limit: '50mb' }));

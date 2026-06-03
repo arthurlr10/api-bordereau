@@ -19,7 +19,7 @@ Développement avec rechargement automatique :
 npm run dev
 ```
 
-Le serveur écoute sur `http://0.0.0.0:3000` (prêt pour un proxy Nginx sur conteneur LXC).
+Le serveur écoute sur `http://0.0.0.0:3001` par défaut (`PORT` configurable, ex. `PORT=3001 npm start`). Prêt pour un proxy Nginx sur conteneur LXC — le port 3000 est souvent déjà utilisé par un front Next.js.
 
 ## Santé
 
