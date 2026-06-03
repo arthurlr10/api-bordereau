@@ -81,7 +81,8 @@ Limite body JSON : 50 Mo. Limite upload `/process` : 10 Mo par fichier.
 Les coordonnées de crop et de texte sont centralisées dans [`src/config/transporteurs.js`](src/config/transporteurs.js). C'est le seul fichier à modifier lors des tests avec de vrais bordereaux.
 
 - **crop** : fractions `0` à `1` (`left`, `bottom`, `right`, `top`) = zone conservée sur la page source.
-- **texte** : `x`, `y` en points PDF depuis le **bas-gauche de la zone recadrée**, `size` optionnel.
+- **texte** : `x`, `y` en points PDF depuis le **bas-gauche de la page de sortie**, `size` optionnel.
+- Pas d’étirement : la page de sortie a la taille de la zone cropée. Pour du **4×6** (288×432 pt), calibrer `crop` sur le PDF source.
 
 Place les PDFs de test dans `samples/` (ex. `samples/vinted-go.pdf`, ignorés par git). Scripts :
 
@@ -92,7 +93,14 @@ node scripts/preview.js samples/vinted-go.pdf vinted-go "TEST CALIBRATION"
 
 Les valeurs actuelles sont des placeholders ; calibrer transporteur par transporteur.
 
-Après modification de `transporteurs.js`, redémarrer `npm run dev` (ou attendre le reload `--watch-path=./src`) avant un `curl`, sinon l’API peut servir l’ancienne config.
+Après modification de `transporteurs.js`, redémarrer `npm run dev` avant un `curl`. Si `sortie.pdf` est blanc ou faux, un **ancien** processus peut encore écouter sur le port 3000 : `lsof -i :3000` puis `kill <PID>`.
+
+Sans serveur (même rendu que l’API à jour) :
+
+```bash
+npm run process:local
+open samples/vinted-go-preview.pdf
+```
 
 ## Structure
 

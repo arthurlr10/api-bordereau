@@ -8,7 +8,8 @@
     "start": "node src/index.js",
     "dev": "node --watch-path=./src --watch src/index.js",
     "pdf-info": "node scripts/pdf-info.js",
-    "preview": "node scripts/preview.js"
+    "preview": "node scripts/preview.js",
+    "process:local": "node scripts/preview.js samples/vinted-go.pdf vinted-go \"Mon article\" && cp samples/vinted-go-preview.pdf samples/sortie.pdf"
   },
   "engines": {
     "node": ">=18"

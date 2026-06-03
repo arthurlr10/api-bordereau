@@ -41,6 +41,7 @@ export async function processPdf(buffer, transporteur, article) {
     top: cropY + cropH,
   });
 
+  // Pas de redimensionnement : la sortie = la zone cropée (calibrer crop pour du 4×6)
   outPage.drawPage(embeddedPage, { x: 0, y: 0, width: cropW, height: cropH });
 
   const font = await outDoc.embedFont(StandardFonts.Helvetica);
