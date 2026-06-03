@@ -4,7 +4,8 @@
  */
 export const transporteurs = {
   'vinted-go': {
-    crop: { left: 0, bottom: 0.52, right: 0.51, top: 1 },
+    // Quart haut-gauche de la page (point de départ calibration)
+    crop: { left: 0, bottom: 0.5, right: 0.5, top: 1 },
     texte: { x: 8, y: 8, size: 9 },
   },
   'mondial-relay': {

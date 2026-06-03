@@ -3,6 +3,7 @@ import { transporteurs } from '../config/transporteurs.js';
 
 /**
  * Applique crop et texte article sur la première page du PDF.
+ * Produit une page cropW×cropH avec origine (0,0) pour un affichage fiable.
  * @param {Buffer} buffer
  * @param {string} transporteur
  * @param {string} article
@@ -10,15 +11,15 @@ import { transporteurs } from '../config/transporteurs.js';
  */
 export async function processPdf(buffer, transporteur, article) {
   const config = transporteurs[transporteur];
-  const pdfDoc = await PDFDocument.load(buffer);
-  const pages = pdfDoc.getPages();
+  const sourceDoc = await PDFDocument.load(buffer);
+  const pages = sourceDoc.getPages();
 
   if (pages.length === 0) {
     throw new Error('PDF sans page');
   }
 
-  const page = pages[0];
-  const { width, height } = page.getSize();
+  const sourcePage = pages[0];
+  const { width, height } = sourcePage.getSize();
   const { crop, texte } = config;
 
   const cropX = width * crop.left;
@@ -30,18 +31,26 @@ export async function processPdf(buffer, transporteur, article) {
     throw new Error('Zone de crop invalide');
   }
 
-  page.setCropBox(cropX, cropY, cropW, cropH);
-  page.setMediaBox(cropX, cropY, cropW, cropH);
+  const outDoc = await PDFDocument.create();
+  const outPage = outDoc.addPage([cropW, cropH]);
 
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  // texte.x / texte.y : points depuis le bas-gauche de la zone recadrée
-  page.drawText(article, {
-    x: cropX + texte.x,
-    y: cropY + texte.y,
+  const embeddedPage = await outDoc.embedPage(sourcePage, {
+    left: cropX,
+    bottom: cropY,
+    right: cropX + cropW,
+    top: cropY + cropH,
+  });
+
+  outPage.drawPage(embeddedPage, { x: 0, y: 0, width: cropW, height: cropH });
+
+  const font = await outDoc.embedFont(StandardFonts.Helvetica);
+  outPage.drawText(article, {
+    x: texte.x,
+    y: texte.y,
     size: texte.size ?? 10,
     font,
     color: rgb(0, 0, 0),
   });
 
-  return pdfDoc.save();
+  return outDoc.save();
 }

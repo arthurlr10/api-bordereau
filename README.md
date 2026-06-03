@@ -92,6 +92,8 @@ node scripts/preview.js samples/vinted-go.pdf vinted-go "TEST CALIBRATION"
 
 Les valeurs actuelles sont des placeholders ; calibrer transporteur par transporteur.
 
+Après modification de `transporteurs.js`, redémarrer `npm run dev` (ou attendre le reload `--watch-path=./src`) avant un `curl`, sinon l’API peut servir l’ancienne config.
+
 ## Structure
 
 ```
