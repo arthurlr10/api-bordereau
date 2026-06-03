@@ -1,6 +1,6 @@
 /**
- * Coordonnées de crop (fractions 0–1) et position du texte (points PDF, origine bas-gauche).
- * À calibrer avec de vrais bordereaux pour chaque transporteur.
+ * crop : fractions 0–1 sur la page source (zone conservée).
+ * texte : x, y en points depuis le bas-gauche de la zone recadrée (pas la page entière).
  */
 export const transporteurs = {
   'vinted-go': {

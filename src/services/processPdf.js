@@ -34,9 +34,10 @@ export async function processPdf(buffer, transporteur, article) {
   page.setMediaBox(cropX, cropY, cropW, cropH);
 
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  // texte.x / texte.y : points depuis le bas-gauche de la zone recadrée
   page.drawText(article, {
-    x: texte.x,
-    y: texte.y,
+    x: cropX + texte.x,
+    y: cropY + texte.y,
     size: texte.size ?? 10,
     font,
     color: rgb(0, 0, 0),

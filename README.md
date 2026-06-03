@@ -81,9 +81,16 @@ Limite body JSON : 50 Mo. Limite upload `/process` : 10 Mo par fichier.
 Les coordonnées de crop et de texte sont centralisées dans [`src/config/transporteurs.js`](src/config/transporteurs.js). C'est le seul fichier à modifier lors des tests avec de vrais bordereaux.
 
 - **crop** : fractions `0` à `1` (`left`, `bottom`, `right`, `top`) = zone conservée sur la page source.
-- **texte** : `x`, `y` en points PDF (origine en bas à gauche), `size` optionnel.
+- **texte** : `x`, `y` en points PDF depuis le **bas-gauche de la zone recadrée**, `size` optionnel.
 
-Les valeurs actuelles sont des placeholders identiques pour les quatre transporteurs ; à ajuster transporteur par transporteur en phase de test.
+Place les PDFs de test dans `samples/` (ex. `samples/vinted-go.pdf`, ignorés par git). Scripts :
+
+```bash
+node scripts/pdf-info.js samples/vinted-go.pdf
+node scripts/preview.js samples/vinted-go.pdf vinted-go "TEST CALIBRATION"
+```
+
+Les valeurs actuelles sont des placeholders ; calibrer transporteur par transporteur.
 
 ## Structure
 
@@ -97,4 +104,8 @@ src/
 └── routes/
     ├── process.js
     └── merge.js
+scripts/
+├── pdf-info.js
+└── preview.js
+samples/          # PDFs de test locaux (gitignored)
 ```
