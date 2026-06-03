@@ -1,0 +1,19 @@
+{
+  "name": "api-bordereau",
+  "version": "1.0.0",
+  "description": "API REST légère pour traitement et fusion de bordereaux PDF",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "pdf-lib": "^1.17.1"
+  }
+}
