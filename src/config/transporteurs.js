@@ -19,9 +19,10 @@ export const transporteurs = {
         crop: { left: 0.036, bottom: 0.478, right: 0.512, top: 0.968 },
         texte: { x: 8, y: 3, size: 9 },
       },
-      // FPDF raster pleine page (~571×808 pt)
+      // FPDF raster — moitié basse A4 puis rotation 90° (comme pdflib, pleine largeur)
       fpdf: {
-        crop: { left: 0.02, bottom: 0.02, right: 0.98, top: 0.98 },
+        crop: { left: 0, bottom: 0, right: 1, top: 0.58 },
+        rotation: 90,
         texte: { x: 8, y: 3, size: 9 },
       },
       // pdf-lib — moitié basse A4, rotation 90° ; tourné : haut/bas = top/bottom, gauche/droite = left/right
