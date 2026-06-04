@@ -2,6 +2,7 @@
  * crop : fractions 0–1 sur la page source (zone conservée = étiquette).
  * Pas d’étirement : la sortie = taille de la zone cropée.
  * texte : x, y en points depuis le bas-gauche de la page de sortie.
+ * rotation : optionnel, 90 ou -90 en degrés après crop (pdflib : 90).
  *
  * mondial-relay : variants (native | fpdf | pdflib), détection auto dans detectMondialRelay.js
  */
@@ -23,9 +24,10 @@ export const transporteurs = {
         crop: { left: 0.02, bottom: 0.02, right: 0.98, top: 0.98 },
         texte: { x: 8, y: 3, size: 9 },
       },
-      // pdf-lib compact — étiquette haut-gauche (~286×404 pt)
+      // pdf-lib — moitié basse A4, rotation 90° ; tourné : haut/bas = top/bottom, gauche/droite = left/right
       pdflib: {
-        crop: { left: 0.01, bottom: 0.52, right: 0.49, top: 1 },
+        crop: { left: 0.12, bottom: 0.05, right: 0.85, top: 0.38 },
+        rotation: 90,
         texte: { x: 8, y: 3, size: 9 },
       },
     },

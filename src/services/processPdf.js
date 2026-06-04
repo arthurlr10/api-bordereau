@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, StandardFonts, degrees, rgb } from 'pdf-lib';
 import { getTransporteurConfig } from '../config/transporteurs.js';
 import { resolveMondialRelayVariant } from './detectMondialRelay.js';
 
@@ -38,7 +38,7 @@ export async function processPdf(buffer, transporteur, article, options = {}) {
 
   const sourcePage = pages[0];
   const { width, height } = sourcePage.getSize();
-  const { crop, texte } = config;
+  const { crop, texte, rotation = 0 } = config;
 
   const cropX = width * crop.left;
   const cropY = height * crop.bottom;
@@ -50,7 +50,9 @@ export async function processPdf(buffer, transporteur, article, options = {}) {
   }
 
   const outDoc = await PDFDocument.create();
-  const outPage = outDoc.addPage([cropW, cropH]);
+  const rot = Number(rotation) || 0;
+  const swap = rot === 90 || rot === -90;
+  const outPage = outDoc.addPage(swap ? [cropH, cropW] : [cropW, cropH]);
 
   const embeddedPage = await outDoc.embedPage(sourcePage, {
     left: cropX,
@@ -59,7 +61,27 @@ export async function processPdf(buffer, transporteur, article, options = {}) {
     top: cropY + cropH,
   });
 
-  outPage.drawPage(embeddedPage, { x: 0, y: 0, width: cropW, height: cropH });
+  if (rot === -90) {
+    outPage.drawPage(embeddedPage, {
+      x: 0,
+      y: cropW,
+      width: cropW,
+      height: cropH,
+      rotate: degrees(-90),
+    });
+  } else if (rot === 90) {
+    outPage.drawPage(embeddedPage, {
+      x: cropH,
+      y: 0,
+      width: cropW,
+      height: cropH,
+      rotate: degrees(90),
+    });
+  } else if (rot !== 0) {
+    throw new Error(`Rotation non supportée : ${rot} (90 ou -90 uniquement)`);
+  } else {
+    outPage.drawPage(embeddedPage, { x: 0, y: 0, width: cropW, height: cropH });
+  }
 
   const font = await outDoc.embedFont(StandardFonts.Helvetica);
   outPage.drawText(article, {
