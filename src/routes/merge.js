@@ -3,35 +3,65 @@ import { mergePdf } from '../services/mergePdf.js';
 
 const router = Router();
 
+function decodeBase64Pdf(entry, label) {
+  if (typeof entry !== 'string' || entry.length === 0) {
+    throw new Error(`Champ "${label}" invalide ou vide`);
+  }
+
+  const base64 = entry.replace(/^data:application\/pdf;base64,/, '');
+  let buffer;
+  try {
+    buffer = Buffer.from(base64, 'base64');
+  } catch {
+    throw new Error(`Base64 invalide pour "${label}"`);
+  }
+
+  if (buffer.length === 0) {
+    throw new Error(`PDF vide pour "${label}"`);
+  }
+
+  return buffer;
+}
+
+/**
+ * @param {Record<string, unknown>} body
+ * @returns {{ entry: string, label: string }[]}
+ */
+function collectPdfEntries(body) {
+  const { files, file1, file2 } = body;
+
+  if (file1 != null || file2 != null) {
+    const list = [];
+    if (file1 != null) list.push({ entry: file1, label: 'file1' });
+    if (file2 != null) list.push({ entry: file2, label: 'file2' });
+    return list;
+  }
+
+  if (Array.isArray(files)) {
+    return files.map((entry, i) => ({ entry, label: `files[${i}]` }));
+  }
+
+  return [];
+}
+
 router.post('/', async (req, res, next) => {
   try {
-    const { files } = req.body;
+    const entries = collectPdfEntries(req.body);
 
-    if (!Array.isArray(files) || files.length === 0) {
-      return res.status(400).json({ error: 'Le champ "files" doit être un tableau non vide de PDFs en base64' });
+    if (entries.length === 0) {
+      return res.status(400).json({
+        error:
+          'Corps JSON requis : "file1" et/ou "file2" (base64), ou "files" (tableau de base64)',
+      });
     }
 
     const buffers = [];
-
-    for (let i = 0; i < files.length; i++) {
-      const entry = files[i];
-      if (typeof entry !== 'string' || entry.length === 0) {
-        return res.status(400).json({ error: `Entrée invalide à l'index ${i}` });
-      }
-
-      const base64 = entry.replace(/^data:application\/pdf;base64,/, '');
-      let buffer;
+    for (const { entry, label } of entries) {
       try {
-        buffer = Buffer.from(base64, 'base64');
-      } catch {
-        return res.status(400).json({ error: `Base64 invalide à l'index ${i}` });
+        buffers.push(decodeBase64Pdf(entry, label));
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
       }
-
-      if (buffer.length === 0) {
-        return res.status(400).json({ error: `PDF vide à l'index ${i}` });
-      }
-
-      buffers.push(buffer);
     }
 
     const pdfBytes = await mergePdf(buffers);

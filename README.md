@@ -73,9 +73,20 @@ Seule la **première page** du PDF est traitée (cas standard d'un bordereau une
 
 ## POST `/merge`
 
-Fusionne plusieurs PDFs dans l'ordre du tableau.
+Fusionne des PDFs en base64. Ordre des pages : **file1** puis **file2** (ou ordre du tableau `files`).
 
-Body JSON :
+Body JSON (recommandé pour n8n) :
+
+```json
+{
+  "file1": "<base64 ancien PDF>",
+  "file2": "<base64 nouveau PDF>"
+}
+```
+
+`file1` et/ou `file2` : au moins un des deux est requis. Préfixe `data:application/pdf;base64,` accepté.
+
+Forme alternative (tableau, rétrocompatible) :
 
 ```json
 {
@@ -88,7 +99,7 @@ Réponse : PDF fusionné en binaire.
 ```bash
 curl -X POST http://localhost:3001/merge \
   -H "Content-Type: application/json" \
-  -d "{\"files\":[\"$(base64 -i a.pdf | tr -d '\n')\",\"$(base64 -i b.pdf | tr -d '\n')\"]}" \
+  -d "{\"file1\":\"$(base64 -i ancien.pdf | tr -d '\n')\",\"file2\":\"$(base64 -i nouveau.pdf | tr -d '\n')\"}" \
   -o fusion.pdf
 ```
 
