@@ -14,8 +14,9 @@ export const transporteurs = {
     texte: { x: 10, y: 10, size: 10 },
   },
   chronopost: {
-    crop: { left: 0.5, bottom: 0.5, right: 1, top: 1 },
-    texte: { x: 10, y: 10, size: 10 },
+    // A4 paysage — étiquette moitié droite, calibré (~346×488 pt)
+    crop: { left: 0.59, bottom: 0.13, right: 1, top: 0.95 },
+    texte: { x: 8, y: 3, size: 9 },
   },
   colissimo: {
     crop: { left: 0.5, bottom: 0.5, right: 1, top: 1 },
