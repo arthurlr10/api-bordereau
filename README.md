@@ -24,7 +24,7 @@ Le serveur écoute sur `http://0.0.0.0:3001` par défaut (`PORT` configurable, e
 ## Santé
 
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:3001/health
 ```
 
 Réponse : `{ "ok": true }`
@@ -38,16 +38,34 @@ Traite un bordereau PDF : crop selon le transporteur, puis ajout du nom de l'art
 | `pdf` | fichier | PDF binaire (`multipart/form-data`) |
 | `transporteur` | string | `vinted-go`, `mondial-relay`, `chronopost`, `colissimo` |
 | `article` | string | Nom de l'article vendu |
+| `variant` | string | Optionnel, **mondial-relay** uniquement : `native`, `fpdf`, `pdflib` (sinon détection auto) |
 
 Réponse : PDF binaire (`Content-Type: application/pdf`).
+
+Pour **mondial-relay**, la réponse inclut l’en-tête `X-Mondial-Relay-Variant` (`native` | `fpdf` | `pdflib`) indiquant le format détecté ou forcé.
 
 Erreurs : JSON `{ "error": "..." }` avec code `400` ou `500`.
 
 ```bash
-curl -X POST http://localhost:3000/process \
+curl -X POST http://localhost:3001/process \
   -F "pdf=@bordereau.pdf" \
   -F "transporteur=vinted-go" \
   -F "article=Jean Levi's 32" \
+  -o sortie.pdf
+
+# Mondial Relay — détection auto du variant
+curl -X POST http://localhost:3001/process \
+  -F "pdf=@samples/mondial-relay-native.pdf" \
+  -F "transporteur=mondial-relay" \
+  -F "article=Jean Levi's 32" \
+  -D - -o sortie.pdf | grep -i X-Mondial
+
+# Forcer un variant (debug)
+curl -X POST http://localhost:3001/process \
+  -F "pdf=@bordereau.pdf" \
+  -F "transporteur=mondial-relay" \
+  -F "variant=fpdf" \
+  -F "article=Test" \
   -o sortie.pdf
 ```
 
@@ -68,7 +86,7 @@ Body JSON :
 Réponse : PDF fusionné en binaire.
 
 ```bash
-curl -X POST http://localhost:3000/merge \
+curl -X POST http://localhost:3001/merge \
   -H "Content-Type: application/json" \
   -d "{\"files\":[\"$(base64 -i a.pdf | tr -d '\n')\",\"$(base64 -i b.pdf | tr -d '\n')\"]}" \
   -o fusion.pdf
@@ -83,6 +101,16 @@ Les coordonnées de crop et de texte sont centralisées dans [`src/config/transp
 - **crop** : fractions `0` à `1` (`left`, `bottom`, `right`, `top`) = zone conservée sur la page source.
 - **texte** : `x`, `y` en points PDF depuis le **bas-gauche de la page de sortie**, `size` optionnel.
 - Pas d’étirement : la page de sortie a la taille de la zone cropée. Pour du **4×6** (288×432 pt), calibrer `crop` sur le PDF source.
+
+### Mondial Relay (3 formats)
+
+Détection automatique ([`src/services/detectMondialRelay.js`](src/services/detectMondialRelay.js)) :
+
+| Variant | Empreinte | Crop calibré (sortie typique) |
+|---------|-----------|-------------------------------|
+| `native` | `Creator` contient `MondialRelay` | ~283×417 pt, haut-gauche A4 |
+| `fpdf` | `Producer` FPDF ou PDF > 80 Ko | ~571×808 pt, quasi pleine page |
+| `pdflib` | sinon (pdf-lib compact) | ~286×404 pt, haut-gauche |
 
 Place les PDFs de test dans `samples/` (ex. `samples/vinted-go.pdf`, ignorés par git). Scripts :
 
@@ -110,12 +138,15 @@ src/
 ├── config/transporteurs.js
 ├── services/
 │   ├── processPdf.js
+│   ├── detectMondialRelay.js
 │   └── mergePdf.js
 └── routes/
     ├── process.js
     └── merge.js
 scripts/
 ├── pdf-info.js
-└── preview.js
+├── preview.js
+├── try-crops.js
+└── try-crops-mondial.js
 samples/          # PDFs de test locaux (gitignored)
 ```

@@ -16,8 +16,8 @@ const presets = [
 const saved = transporteurs.chronopost;
 for (const p of presets) {
   transporteurs.chronopost = { ...saved, crop: p.crop, texte: saved.texte };
-  const out = await processPdf(buffer, 'chronopost', 'ARTICLE TEST');
-  fs.writeFileSync(`samples/crop-${p.name}.pdf`, out);
+  const { bytes } = await processPdf(buffer, 'chronopost', 'ARTICLE TEST');
+  fs.writeFileSync(`samples/crop-${p.name}.pdf`, bytes);
   console.log(p.name, p.crop);
 }
 transporteurs.chronopost = saved;

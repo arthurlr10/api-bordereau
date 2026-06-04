@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-import { transporteurs } from '../config/transporteurs.js';
+import { getTransporteurConfig } from '../config/transporteurs.js';
+import { resolveMondialRelayVariant } from './detectMondialRelay.js';
 
 /**
  * Applique crop et texte article sur la première page du PDF.
@@ -7,10 +8,27 @@ import { transporteurs } from '../config/transporteurs.js';
  * @param {Buffer} buffer
  * @param {string} transporteur
  * @param {string} article
- * @returns {Promise<Uint8Array>}
+ * @param {{ variant?: string }} [options]
+ * @returns {Promise<{ bytes: Uint8Array, mondialVariant?: string }>}
  */
-export async function processPdf(buffer, transporteur, article) {
-  const config = transporteurs[transporteur];
+export async function processPdf(buffer, transporteur, article, options = {}) {
+  let mondialVariant;
+  let config;
+
+  if (transporteur === 'mondial-relay') {
+    const resolved = await resolveMondialRelayVariant(buffer, options.variant);
+    mondialVariant = resolved.variant;
+    config = getTransporteurConfig(transporteur, mondialVariant);
+    if (!config) {
+      throw new Error(`Configuration manquante pour variant ${mondialVariant}`);
+    }
+  } else {
+    config = getTransporteurConfig(transporteur);
+    if (!config) {
+      throw new Error(`Transporteur inconnu : ${transporteur}`);
+    }
+  }
+
   const sourceDoc = await PDFDocument.load(buffer);
   const pages = sourceDoc.getPages();
 
@@ -41,7 +59,6 @@ export async function processPdf(buffer, transporteur, article) {
     top: cropY + cropH,
   });
 
-  // Pas de redimensionnement : la sortie = la zone cropée (calibrer crop pour du 4×6)
   outPage.drawPage(embeddedPage, { x: 0, y: 0, width: cropW, height: cropH });
 
   const font = await outDoc.embedFont(StandardFonts.Helvetica);
@@ -53,5 +70,6 @@ export async function processPdf(buffer, transporteur, article) {
     color: rgb(0, 0, 0),
   });
 
-  return outDoc.save();
+  const bytes = await outDoc.save();
+  return mondialVariant != null ? { bytes, mondialVariant } : { bytes };
 }
