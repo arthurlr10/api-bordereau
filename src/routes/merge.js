@@ -3,6 +3,32 @@ import { mergePdf } from '../services/mergePdf.js';
 
 const router = Router();
 
+function validatePdfBuffer(buffer, label) {
+  if (!buffer || buffer.length === 0) {
+    throw new Error(`PDF vide pour "${label}"`);
+  }
+  return buffer;
+}
+
+/**
+ * @param {import('express').Request['files']} files
+ * @returns {Buffer[]}
+ */
+function collectMultipartBuffers(files) {
+  const buffers = [];
+  const file1 = files?.file1?.[0];
+  const file2 = files?.file2?.[0];
+
+  if (file1) {
+    buffers.push(validatePdfBuffer(file1.buffer, 'file1'));
+  }
+  if (file2) {
+    buffers.push(validatePdfBuffer(file2.buffer, 'file2'));
+  }
+
+  return buffers;
+}
+
 function decodeBase64Pdf(entry, label) {
   if (typeof entry !== 'string' || entry.length === 0) {
     throw new Error(`Champ "${label}" invalide ou vide`);
@@ -16,18 +42,14 @@ function decodeBase64Pdf(entry, label) {
     throw new Error(`Base64 invalide pour "${label}"`);
   }
 
-  if (buffer.length === 0) {
-    throw new Error(`PDF vide pour "${label}"`);
-  }
-
-  return buffer;
+  return validatePdfBuffer(buffer, label);
 }
 
 /**
  * @param {Record<string, unknown>} body
  * @returns {{ entry: string, label: string }[]}
  */
-function collectPdfEntries(body) {
+function collectJsonEntries(body) {
   const { files, file1, file2 } = body;
 
   if (file1 != null || file2 != null) {
@@ -46,21 +68,25 @@ function collectPdfEntries(body) {
 
 router.post('/', async (req, res, next) => {
   try {
-    const entries = collectPdfEntries(req.body);
+    let buffers = collectMultipartBuffers(req.files);
 
-    if (entries.length === 0) {
-      return res.status(400).json({
-        error:
-          'Corps JSON requis : "file1" et/ou "file2" (base64), ou "files" (tableau de base64)',
-      });
-    }
+    if (buffers.length === 0) {
+      const entries = collectJsonEntries(req.body);
 
-    const buffers = [];
-    for (const { entry, label } of entries) {
-      try {
-        buffers.push(decodeBase64Pdf(entry, label));
-      } catch (err) {
-        return res.status(400).json({ error: err.message });
+      if (entries.length === 0) {
+        return res.status(400).json({
+          error:
+            'Champs "file1" et/ou "file2" requis (fichiers multipart), ou corps JSON avec base64',
+        });
+      }
+
+      buffers = [];
+      for (const { entry, label } of entries) {
+        try {
+          buffers.push(decodeBase64Pdf(entry, label));
+        } catch (err) {
+          return res.status(400).json({ error: err.message });
+        }
       }
     }
 

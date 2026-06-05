@@ -73,9 +73,29 @@ Seule la **première page** du PDF est traitée (cas standard d'un bordereau une
 
 ## POST `/merge`
 
-Fusionne des PDFs en base64. Ordre des pages : **file1** puis **file2** (ou ordre du tableau `files`).
+Fusionne des PDFs. Ordre des pages : **file1** puis **file2**.
 
-Body JSON (recommandé pour n8n) :
+### Multipart (recommandé, même format que `/process`)
+
+`Content-Type: multipart/form-data`
+
+| Champ   | Type   | Requis |
+|---------|--------|--------|
+| `file1` | fichier PDF | non (ancien bordereau) |
+| `file2` | fichier PDF | non |
+
+Au moins un des deux champs est requis.
+
+```bash
+curl -X POST http://localhost:3001/merge \
+  -F "file1=@ancien.pdf" \
+  -F "file2=@nouveau.pdf" \
+  -o fusion.pdf
+```
+
+Dans n8n (HTTP Request) : **Body Content Type** = Form-Data, **Parameter Type** = Binary File pour `file1` et `file2` (ex. `file1` = sortie Google Drive Download, `file2` = `binary.data` de `/process`).
+
+### JSON (rétrocompatible)
 
 ```json
 {
@@ -84,26 +104,11 @@ Body JSON (recommandé pour n8n) :
 }
 ```
 
-`file1` et/ou `file2` : au moins un des deux est requis. Préfixe `data:application/pdf;base64,` accepté.
+Préfixe `data:application/pdf;base64,` accepté. Forme alternative : `"files": ["<base64>", "<base64>"]`.
 
-Forme alternative (tableau, rétrocompatible) :
+Réponse : PDF fusionné en binaire (`Content-Type: application/pdf`).
 
-```json
-{
-  "files": ["<base64>", "<base64>"]
-}
-```
-
-Réponse : PDF fusionné en binaire.
-
-```bash
-curl -X POST http://localhost:3001/merge \
-  -H "Content-Type: application/json" \
-  -d "{\"file1\":\"$(base64 -i ancien.pdf | tr -d '\n')\",\"file2\":\"$(base64 -i nouveau.pdf | tr -d '\n')\"}" \
-  -o fusion.pdf
-```
-
-Limite body JSON : 50 Mo. Limite upload `/process` : 10 Mo par fichier.
+Limite upload multipart : 10 Mo par fichier. Limite body JSON : 50 Mo.
 
 ## Calibration des transporteurs
 

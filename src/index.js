@@ -18,7 +18,14 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/process', upload.single('pdf'), processRouter);
-app.use('/merge', mergeRouter);
+app.use(
+  '/merge',
+  upload.fields([
+    { name: 'file1', maxCount: 1 },
+    { name: 'file2', maxCount: 1 },
+  ]),
+  mergeRouter
+);
 
 app.use((err, _req, res, _next) => {
   if (err instanceof multer.MulterError) {
