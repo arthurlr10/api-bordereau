@@ -39,8 +39,9 @@ export const transporteurs = {
     texte: { x: 8, y: 3, size: 9 },
   },
   colissimo: {
-    crop: { left: 0.5, bottom: 0.5, right: 1, top: 1 },
-    texte: { x: 10, y: 10, size: 10 },
+    // A4 paysage — étiquette découpable gauche (bordure + DEPOT PRIO), ~320×447 pt
+    crop: { left: 0.048, bottom: 0.15, right: 0.425, top: 0.90 },
+    texte: { x: 8, y: 3, size: 9 },
   },
 };
 

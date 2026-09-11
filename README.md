@@ -135,7 +135,7 @@ node scripts/pdf-info.js samples/vinted-go.pdf
 node scripts/preview.js samples/vinted-go.pdf vinted-go "TEST CALIBRATION"
 ```
 
-Les valeurs actuelles sont des placeholders ; calibrer transporteur par transporteur.
+Les valeurs actuelles sont calibrées pour les samples listés dans `samples/README.md`.
 
 Après modification de `transporteurs.js`, redémarrer `npm run dev` avant un `curl`. Si `sortie.pdf` est blanc ou faux, un **ancien** processus peut encore écouter sur le port 3000 : `lsof -i :3000` puis `kill <PID>`.
 
@@ -144,6 +144,15 @@ Sans serveur (même rendu que l’API à jour) :
 ```bash
 npm run process:local
 open samples/vinted-go-preview.pdf
+```
+
+### Colissimo
+
+A4 paysage (pdf-lib) — zone découpable à gauche (bordure + `DEPOT PRIO`) :
+
+```bash
+node scripts/preview.js samples/colissimo.pdf colissimo "TEST CALIBRATION"
+open samples/colissimo-preview.pdf
 ```
 
 ## Structure

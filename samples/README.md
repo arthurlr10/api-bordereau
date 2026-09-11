@@ -7,7 +7,7 @@ Dépose ici tes bordereaux PDF (non versionnés) :
 - `mondial-relay-native.pdf` — Mondial Relay officiel (Creator `MondialRelay`)
 - `mondial-relay-fpdf.pdf` — Mondial Relay raster / FPDF
 - `mondial-relay-pdflib.pdf` — Mondial Relay compact (pdf-lib)
-- `colissimo.pdf` — à calibrer
+- `colissimo.pdf` — calibré (A4 paysage, étiquette gauche)
 
 ```bash
 node scripts/pdf-info.js samples/vinted-go.pdf
